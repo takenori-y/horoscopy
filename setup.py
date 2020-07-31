@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 
 with open('README.md', 'r') as f:
@@ -28,6 +28,6 @@ setup(
         'scipy >= 1.5.0',
     ],
     extras_require={
-        'test': ['pytest', 'flake8'],
+        'dev': ['pytest', 'flake8'],
     },
 )
