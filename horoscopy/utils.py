@@ -7,18 +7,19 @@ import numpy as np
 def asarray(a):
     """Convert array-like input to numpy array.
 
-    This function is implemented referring to scipy.
-
     Parameters
     ----------
     a : array_like
         Array-like input.
 
-
     Returns
     -------
     a : np.ndarray
         Converted validated array.
+
+    Notes
+    -----
+    This function is implemented referring to scipy.
 
     """
 

@@ -20,12 +20,10 @@ def freqt(C, M=24, alpha=0.42):
     alpha : float in (-1, 1) [scalar]
         Frequency warping factor.
 
-
     Returns
     -------
     G : np.ndarray [shape=(M + 1), or (M + 1, T)]
         Frequency warped sequence.
-
 
     References
     ----------
