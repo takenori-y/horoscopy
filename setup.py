@@ -28,6 +28,6 @@ setup(
         'scipy >= 1.5.0',
     ],
     extras_require={
-        'test': ['pytest'],
+        'test': ['pytest', 'flake8'],
     },
 )
