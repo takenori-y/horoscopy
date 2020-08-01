@@ -4,13 +4,16 @@
 import numpy as np
 
 
-def asarray(a):
+def _asarray(a, as_matrix=False):
     """Convert array-like input to numpy array.
 
     Parameters
     ----------
     a : array_like
         Array-like input.
+
+    as_matrix : bool
+        If true and input is vector, append an additional axis to the input.
 
     Returns
     -------
@@ -23,12 +26,11 @@ def asarray(a):
 
     """
 
-    if type(a) is np.ndarray:
-        return a
-
     a = np.asarray(a)
     if a.dtype is np.dtype('O'):
         raise ValueError('object arrays are not supported')
+    if as_matrix and a.ndim == 1:
+        a = np.expand_dims(a, axis=-1)
 
     return a
 

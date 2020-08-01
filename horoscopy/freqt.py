@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from .utils import asarray, check_alpha
+from .utils import _asarray, check_alpha
 
 
 def freqt(C, M=24, alpha=0.42):
@@ -34,7 +34,7 @@ def freqt(C, M=24, alpha=0.42):
 
     L = M + 1
 
-    C = asarray(C)
+    C = _asarray(C)
     dim = C.ndim
     if dim == 1:
         out_size = (L,)
