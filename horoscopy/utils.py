@@ -35,6 +35,29 @@ def _asarray(a, as_matrix=False):
     return a
 
 
+def _safe_squeeze(x, axis=1):
+    """Remove single-dimensional entry from the shape of an array safely.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input data.
+
+    axis : int >= 0 [scalar]
+        A single-dimensional entry.
+
+    Returns
+    -------
+    y : np.ndarray
+        The input array.
+
+    """
+
+    if x.shape[axis] == 1:
+        x = np.squeeze(x, axis=axis)
+    return x
+
+
 def check_alpha(alpha):
     """Check whether given alpha is valid or not.
 

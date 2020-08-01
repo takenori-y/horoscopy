@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from .utils import _asarray, check_alpha
+from .utils import _asarray, _safe_squeeze, check_alpha
 
 
 def freqt(C, M=24, alpha=0.42):
@@ -34,17 +34,13 @@ def freqt(C, M=24, alpha=0.42):
 
     L = M + 1
 
-    C = _asarray(C)
-    dim = C.ndim
-    if dim == 1:
-        out_size = (L,)
-    elif dim == 2:
-        T = C.shape[1]
-        out_size = (L, T)
-    else:
-        raise ValueError('Unexpected input dim: ' + str(dim))
+    C = _asarray(C, as_matrix=True)
+    if C.ndim != 2:
+        raise ValueError('C must be 2-D matrix or 1-D vector')
 
     m = C.shape[0] - 1
+    T = C.shape[1]
+
     if m < 0:
         raise ValueError('Order m must be a non-negative integer')
 
@@ -54,8 +50,8 @@ def freqt(C, M=24, alpha=0.42):
     check_alpha(alpha)
     beta = 1 - alpha * alpha
 
-    D = np.zeros(out_size)
-    G = np.zeros(out_size)
+    D = np.zeros((L, T))
+    G = np.zeros((L, T))
     for i in range(m, -1, -1):
         D[0] = G[0]
         G[0] = C[i] + alpha * D[0]
@@ -66,4 +62,4 @@ def freqt(C, M=24, alpha=0.42):
             D[j] = G[j]
             G[j] = D[j - 1] + alpha * (D[j] - G[j - 1])
 
-    return G
+    return _safe_squeeze(G)
