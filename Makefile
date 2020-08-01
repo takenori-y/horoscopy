@@ -1,3 +1,6 @@
+# Copyright (c) 2020 Takenori Yoshimura
+# Licensed under the MIT license
+
 .PHONY: init dev test clean
 
 init:

@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Copyright (c) 2020 Takenori Yoshimura
+# Licensed under the MIT license
+
 import numpy as np
 
 from .utils import _asarray, _safe_squeeze

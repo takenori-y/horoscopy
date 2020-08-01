@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Copyright (c) 2020 Takenori Yoshimura
+# Licensed under the MIT license
+
 import numpy as np
 
 from .utils import _asarray, _safe_squeeze, check_alpha
@@ -32,8 +35,6 @@ def freqt(C, M=24, alpha=0.42):
 
     """
 
-    L = M + 1
-
     C = _asarray(C, as_matrix=True)
     if C.ndim != 2:
         raise ValueError('C must be 2-D matrix or 1-D vector')
@@ -50,6 +51,7 @@ def freqt(C, M=24, alpha=0.42):
     check_alpha(alpha)
     beta = 1 - alpha * alpha
 
+    L = M + 1
     D = np.zeros((L, T))
     G = np.zeros((L, T))
     for i in range(m, -1, -1):
