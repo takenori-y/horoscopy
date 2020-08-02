@@ -8,6 +8,9 @@ import horoscopy
 import numpy as np
 
 
+np.random.seed(12345)
+
+
 def test_identity(m=4):
     c = np.random.rand(m + 1)
     g = horoscopy.freqt(c, M=m, alpha=0)

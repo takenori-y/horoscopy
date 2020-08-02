@@ -16,7 +16,7 @@ def _asarray(a, as_matrix=False):
         Array-like input.
 
     as_matrix : bool
-        If true and input is vector, append an additional axis to the input.
+        If True and input is vector, append an additional axis to the input.
 
     Returns
     -------
