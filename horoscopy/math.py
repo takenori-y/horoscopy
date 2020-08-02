@@ -36,16 +36,41 @@ def solve_toeplitz_plus_hankel(t, h, b):
 
     """
 
-    def mv(m, v):
-        return np.squeeze(np.matmul(m, np.expand_dims(v, axis=-1)), axis=-1)
+    # Perform 2-D matrix-vector multiplication, dot-product.
+    def mv2d(m, v):
+        ret = np.zeros(v.shape)
+        ret[:, 0] = m[:, 0, 0] * v[:, 0] + m[:, 0, 1] * v[:, 1]
+        ret[:, 1] = m[:, 1, 0] * v[:, 0] + m[:, 1, 1] * v[:, 1]
+        return ret
 
-    def cross_transpose(m):
-        n = np.zeros(m.shape)
-        n[:, 0, 0] = m[:, 1, 1]
-        n[:, 0, 1] = m[:, 1, 0]
-        n[:, 1, 0] = m[:, 0, 1]
-        n[:, 1, 1] = m[:, 0, 0]
-        return n
+    # Perform 2-D matrix-matrix mulciplication.
+    def mm2d(m, n):
+        ret = np.zeros(m.shape)
+        ret[:, 0, 0] = m[:, 0, 0] * n[:, 0, 0] + m[:, 0, 1] * n[:, 1, 0]
+        ret[:, 0, 1] = m[:, 0, 0] * n[:, 0, 1] + m[:, 0, 1] * n[:, 1, 1]
+        ret[:, 1, 0] = m[:, 1, 0] * n[:, 0, 0] + m[:, 1, 1] * n[:, 1, 0]
+        ret[:, 1, 1] = m[:, 1, 0] * n[:, 0, 1] + m[:, 1, 1] * n[:, 1, 1]
+        return ret
+
+    # Perform 2-D matrix inversion.
+    def inv2d(x):
+        y = np.zeros(x.shape)
+        y[:, 0, 0] = x[:, 1, 1]
+        y[:, 0, 1] = -x[:, 0, 1]
+        y[:, 1, 0] = -x[:, 1, 0]
+        y[:, 1, 1] = x[:, 0, 0]
+        y *= np.reshape(np.reciprocal(
+            x[:, 0, 0] * x[:, 1, 1] - x[:, 0, 1] * x[:, 1, 0]), [-1, 1, 1])
+        return y
+
+    # Perform 2-D cross transpose.
+    def ct2d(x):
+        y = np.zeros(x.shape)
+        y[:, 0, 0] = x[:, 1, 1]
+        y[:, 0, 1] = x[:, 1, 0]
+        y[:, 1, 0] = x[:, 0, 1]
+        y[:, 1, 1] = x[:, 0, 0]
+        return y
 
     if not isinstance(t, tuple) and len(t) != 2:
         raise ValueError('t must be 2-dim tuple')
@@ -98,7 +123,7 @@ def solve_toeplitz_plus_hankel(t, h, b):
         b_bar[:, 0] = b[0]
         b_bar[:, 1] = b[M - 1]
         p = np.zeros((M, K, 2))
-        p[0] = mv(np.linalg.inv(R[0]), b_bar)
+        p[0] = mv2d(inv2d(R[0]), b_bar)
 
         # Set V_x.
         V_x = np.copy(R[0])
@@ -108,31 +133,31 @@ def solve_toeplitz_plus_hankel(t, h, b):
         # a: Calculate E_x.
         E_x = np.zeros((K, 2, 2))
         for j in range(i):
-            E_x += np.matmul(R[i - j], X[j])
+            E_x += mm2d(R[i - j], X[j])
 
         # b: Calculate e_p.
         e_p = np.zeros((K, 2))
         for j in range(i):
-            e_p += mv(R[i - j], p[j])
+            e_p += mv2d(R[i - j], p[j])
 
         # c: Calculate B_x.
-        B_x = np.matmul(np.linalg.inv(cross_transpose(V_x)), E_x)
+        B_x = mm2d(inv2d(ct2d(V_x)), E_x)
 
         # d: Update X and V_x.
         for j in range(1, i):
-            X[j] -= np.matmul(cross_transpose(X_prev[i - j]), B_x)
+            X[j] -= mm2d(ct2d(X_prev[i - j]), B_x)
         X[i] = -B_x
         X_prev[1:i + 1] = X[1:i + 1]
-        V_x -= np.matmul(cross_transpose(E_x), B_x)
+        V_x -= mm2d(ct2d(E_x), B_x)
 
         # e: Calculate g.
         b_bar[:, 0] = b[i]
         b_bar[:, 1] = b[M - 1 - i]
-        g = mv(np.linalg.inv(cross_transpose(V_x)), b_bar - e_p)
+        g = mv2d(inv2d(ct2d(V_x)), b_bar - e_p)
 
         # f: Update p.
         for j in range(i):
-            p[j] += mv(cross_transpose(X[i - j]), g)
+            p[j] += mv2d(ct2d(X[i - j]), g)
         p[i] = g
 
     # Step 3:
