@@ -9,7 +9,7 @@ import numpy as np
 from .utils import _asarray, _safe_squeeze, check_alpha
 
 
-def freqt(C, M=24, alpha=0.42):
+def freqt(C, M=24, alpha=0.42, recursive=True):
     """Perform frequency transform.
 
     Parameters
@@ -22,6 +22,9 @@ def freqt(C, M=24, alpha=0.42):
 
     alpha : float in (-1, 1) [scalar]
         Frequency warping factor.
+
+    recursive : bool [scalar]
+        If True, use recursive algorithm instead of matrix multiplication.
 
     Returns
     -------
@@ -40,8 +43,6 @@ def freqt(C, M=24, alpha=0.42):
         raise ValueError('C must be 2-D matrix or 1-D vector')
 
     m = C.shape[0] - 1
-    T = C.shape[1]
-
     if m < 0:
         raise ValueError('Order m must be a non-negative integer')
 
@@ -51,17 +52,40 @@ def freqt(C, M=24, alpha=0.42):
     check_alpha(alpha)
     beta = 1 - alpha * alpha
 
-    L = M + 1
-    D = np.zeros((L, T))
-    G = np.zeros((L, T))
-    for i in range(m, -1, -1):
-        D[0] = G[0]
-        G[0] = C[i] + alpha * D[0]
-        if 1 < L:
-            D[1] = G[1]
-            G[1] = beta * D[0] + alpha * D[1]
-        for j in range(2, L):
-            D[j] = G[j]
-            G[j] = D[j - 1] + alpha * (D[j] - G[j - 1])
+    if recursive:
+        L = M + 1
+        T = C.shape[1]
+        D = np.zeros((L, T))
+        G = np.zeros((L, T))
+        for i in range(m, -1, -1):
+            D[0] = G[0]
+            G[0] = C[i] + alpha * D[0]
+            if 1 < L:
+                D[1] = G[1]
+                G[1] = beta * D[0] + alpha * D[1]
+            for j in range(2, L):
+                D[j] = G[j]
+                G[j] = D[j - 1] + alpha * (D[j] - G[j - 1])
+    else:
+        given_param = (m, M, alpha)
+        if 'param' not in dir(freqt) or freqt.param != given_param:
+            freqt.param = given_param
+            update = True
+        else:
+            update = False
+
+        if update:
+            L = M + 1
+            K = m + 1
+            freqt.A = np.zeros((L, K))
+            freqt.A[0, :] = alpha ** np.arange(K)
+            freqt.A[1, 1:] = alpha ** np.arange(K - 1) * np.arange(1, K) * beta
+            for i in range(2, L):
+                i1 = i - 1
+                for j in range(1, K):
+                    j1 = j - 1
+                    freqt.A[i, j] = (freqt.A[i1, j1] +
+                                     alpha * (freqt.A[i, j1] - freqt.A[i1, j]))
+        G = np.matmul(freqt.A, C)
 
     return _safe_squeeze(G)
