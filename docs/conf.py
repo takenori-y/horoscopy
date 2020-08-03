@@ -22,7 +22,8 @@ copyright = '2020, Takenori Yoshimura'
 author = 'Takenori Yoshimura'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
+exec(open('../horoscopy/version.py').read())
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -32,6 +33,7 @@ release = '0.1.0'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.githubpages',
     'sphinx.ext.viewcode',
     'numpydoc',
 ]
