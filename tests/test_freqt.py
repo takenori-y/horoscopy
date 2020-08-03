@@ -4,8 +4,9 @@
 # Copyright (c) 2020 Takenori Yoshimura
 # Licensed under the MIT license
 
-import horoscopy
 import numpy as np
+
+import horoscopy
 
 
 np.random.seed(12345)
