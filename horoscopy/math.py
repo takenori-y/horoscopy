@@ -30,9 +30,10 @@ def solve_toeplitz_plus_hankel(t, h, b):
 
     References
     ----------
-    G. Merchant and T. Parks, ``Efficient solution of a Toeplitz-plus-Hankel
-    coefficient matrix system of equations,'' IEEE Transactions on Acoustics,
-    Speech, and Signal Processing, vol. 30, no. 1, pp. 40--44, 1982.
+    .. [1] G. Merchant and T. Parks, "Efficient solution of a
+           Toeplitz-plus-Hankel coefficient matrix system of equations,"
+           IEEE Transactions on Acoustics, Speech, and Signal Processing,
+           vol. 30, no. 1, pp. 40--44, 1982.
 
     """
 

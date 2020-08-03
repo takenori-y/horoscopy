@@ -33,8 +33,9 @@ def freqt(C, M=24, alpha=0.42, recursive=True):
 
     References
     ----------
-    A. V. Oppenheim and D. H. Johnson, ``Discrete representation of signals,''
-    in Proceedings of the IEEE, vol. 60, no. 6, pp. 681--691, 1972.
+    .. [1] A. V. Oppenheim and D. H. Johnson, "Discrete representation of
+           signals," in Proceedings of the IEEE, vol. 60, no. 6, pp. 681-691,
+           1972.
 
     """
 
