@@ -30,17 +30,18 @@ setup(
     ],
     python_requires='>= 3.6',
     install_requires=[
-        'librosa >= 0.8.0',
         'numpy >= 1.15.0',
         'scipy >= 1.4.0',
+        'librosa >= 0.8.0',
     ],
     extras_require={
         'dev': [
-            'pytest',
             'flake8',
+            'numpydoc',
+            'pytest',
             'sphinx',
             'sphinx_rtd_theme',
-            'numpydoc',
+            'twine',
         ],
     },
 )
