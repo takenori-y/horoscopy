@@ -115,7 +115,7 @@ def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
         mc += grad
 
         # Check convergence.
-        epsilon = np.mean(r_t[0])
+        epsilon = np.max(r_t[0])
         relative_change = (prev_epsilon - epsilon) / epsilon
         if relative_change < tol:
             break
