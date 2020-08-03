@@ -25,7 +25,7 @@ setup(
     install_requires=[
         'librosa >= 0.8.0',
         'numpy >= 1.15.0',
-        'scipy >= 1.5.0',
+        'scipy >= 1.4.0',
     ],
     extras_require={
         'dev': [
