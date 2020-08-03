@@ -1,7 +1,7 @@
 # Copyright (c) 2020 Takenori Yoshimura
 # Licensed under the MIT license
 
-.PHONY: init dev wheel test clean
+.PHONY: init dev test wheel clean
 
 init:
 	pip install -e .
@@ -19,4 +19,5 @@ wheel:
 	. venv/bin/activate; python setup.py bdist_wheel
 
 clean:
-	rm -rf build dist venv horoscopy.egg-info
+	rm -rf build dist docs/_build venv *.egg-info
+	find . -name '__pycache__' -type d | xargs rm -rf
