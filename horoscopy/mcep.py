@@ -11,7 +11,7 @@ from scipy.fft import rfft, irfft
 
 from .freqt import freqt
 from .math import solve_toeplitz_plus_hankel
-from .utils import _asarray, _safe_squeeze, check_alpha
+from .utils import _asarray, check_alpha
 
 
 def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
@@ -19,7 +19,7 @@ def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
 
     Parameters
     ----------
-    S : array-like [shape=(1 + n_fft / 2, T), non-negative]
+    S : array-like [shape=(1 + n_fft / 2,) or (1 + n_fft / 2, T), non-negative]
         Input linear magnitude spectrogram.
 
     M : int >= 0 [scalar]
@@ -54,8 +54,10 @@ def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
             m = x.shape[0]
             tilde.A = np.zeros((M, m))
             tilde.A[0, 0] = 1
-            tilde.A[1:, 0] = (-alpha) ** np.arange(1, M)
-            tilde.A[1, 1:] = alpha ** np.arange(m - 1) * (1 - alpha * alpha)
+            if 1 < M:
+                tilde.A[1:, 0] = (-alpha) ** np.arange(1, M)
+            if 1 < M and 1 < m:
+                tilde.A[1, 1:] = alpha ** np.arange(m - 1) * (1 - alpha * alpha)
             for i in range(2, M):
                 i1 = i - 1
                 for j in range(1, m):
@@ -64,9 +66,17 @@ def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
                                      alpha * (tilde.A[i, j1] - tilde.A[i1, j]))
         return np.matmul(tilde.A, x)
 
-    S = _asarray(S, as_matrix=True)
-    if S.ndim != 2:
-        raise ValueError('S must be 2-D matrix or 1-D vector')
+    S = _asarray(S)
+    if S.ndim == 1:
+        is_vector_input = True
+        S = np.expand_dims(S, axis=-1)
+    elif S.ndim == 2:
+        is_vector_input = False
+    else:
+        raise ValueError('Input S must be 2-D matrix or 1-D vector')
+
+    if S.shape[0] <= 1:
+        raise ValueError('S.shape[0] must be greater than 1')
 
     if M < 0:
         raise ValueError('Order M must be a non-negative integer')
@@ -121,4 +131,7 @@ def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
             break
         prev_epsilon = epsilon
 
-    return _safe_squeeze(mc)
+    if is_vector_input:
+        mc = np.squeeze(mc, axis=-1)
+
+    return mc

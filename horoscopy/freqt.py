@@ -6,7 +6,7 @@
 
 import numpy as np
 
-from .utils import _asarray, _safe_squeeze, check_alpha
+from .utils import _asarray, check_alpha
 
 
 def freqt(C, M=24, alpha=0.42, recursive=True):
@@ -39,9 +39,14 @@ def freqt(C, M=24, alpha=0.42, recursive=True):
 
     """
 
-    C = _asarray(C, as_matrix=True)
-    if C.ndim != 2:
-        raise ValueError('C must be 2-D matrix or 1-D vector')
+    C = _asarray(C)
+    if C.ndim == 1:
+        is_vector_input = True
+        C = np.expand_dims(C, axis=-1)
+    elif C.ndim == 2:
+        is_vector_input = False
+    else:
+        raise ValueError('Input C must be 2-D matrix or 1-D vector')
 
     m = C.shape[0] - 1
     if m < 0:
@@ -80,7 +85,9 @@ def freqt(C, M=24, alpha=0.42, recursive=True):
             K = m + 1
             freqt.A = np.zeros((L, K))
             freqt.A[0, :] = alpha ** np.arange(K)
-            freqt.A[1, 1:] = alpha ** np.arange(K - 1) * np.arange(1, K) * beta
+            if 1 < L and 1 < K:
+                freqt.A[1, 1:] = (alpha ** np.arange(K - 1) * np.arange(1, K) *
+                                  beta)
             for i in range(2, L):
                 i1 = i - 1
                 for j in range(1, K):
@@ -89,4 +96,7 @@ def freqt(C, M=24, alpha=0.42, recursive=True):
                                      alpha * (freqt.A[i, j1] - freqt.A[i1, j]))
         G = np.matmul(freqt.A, C)
 
-    return _safe_squeeze(G)
+    if is_vector_input:
+        G = np.squeeze(G, axis=-1)
+
+    return G

@@ -28,3 +28,11 @@ def test_stft_to_mcep(wav_file=get_data('example.wav'),
     target = read_binary(mcep_file)
     target = np.transpose(np.reshape(target, (-1, order + 1)))
     np.testing.assert_array_almost_equal(actual, target)
+
+
+def test_matrix_input(order=2):
+    S = np.arange(1, 6)
+    mc = horoscopy.stft_to_mcep(S, M=order)
+    S2 = np.expand_dims(S, axis=-1)
+    mc2 = horoscopy.stft_to_mcep(S2, M=order)[:, 0]
+    np.testing.assert_array_almost_equal(mc, mc2)

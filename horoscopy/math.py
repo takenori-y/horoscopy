@@ -6,7 +6,7 @@
 
 import numpy as np
 
-from .utils import _asarray, _safe_squeeze
+from .utils import _asarray
 
 
 def solve_toeplitz_plus_hankel(t, h, b):
@@ -73,28 +73,33 @@ def solve_toeplitz_plus_hankel(t, h, b):
         y[:, 1, 1] = x[:, 0, 0]
         return y
 
+    b = _asarray(b)
+    if b.ndim == 1:
+        is_vector_input = True
+        b = np.expand_dims(b, axis=-1)
+    elif b.ndim == 2:
+        is_vector_input = False
+    else:
+        raise ValueError('Input b must be 2-D matrix or 1-D vector')
+    N, K = b.shape
+
     if not isinstance(t, tuple) and len(t) != 2:
-        raise ValueError('t must be 2-dim tuple')
+        raise ValueError('Input t must be a tuple of size 2')
+    t_c, t_r = t
+    t_c = _asarray(t_c)
+    t_r = _asarray(t_r)
+    if ((is_vector_input and (t_c.ndim != 1 or t_r.ndim != 1)) or
+        (not is_vector_input and (t_c.ndim != 2 or t_r.ndim != 2))):
+        raise ValueError('Dimension mismatch t vs b')
 
     if not isinstance(h, tuple) and len(h) != 2:
-        raise ValueError('h must be 2-dim tuple')
-
-    t_c, t_r = t
-    t_c = _asarray(t_c, as_matrix=True)
-    t_r = _asarray(t_r, as_matrix=True)
-    if t_c.ndim != t_r.ndim or t_c.ndim != 2:
-        raise ValueError('t must be 2-D matrices or 1-D vectors')
-
+        raise ValueError('Input h must be a tuple of size 2')
     h_c, h_r = h
-    h_c = _asarray(h_c, as_matrix=True)
-    h_r = _asarray(h_r, as_matrix=True)
-    if h_c.ndim != h_r.ndim or h_c.ndim != 2:
-        raise ValueError('h must be 2-D matrices or 1-D vectors')
-
-    b = _asarray(b, as_matrix=True)
-    if b.ndim != 2:
-        raise ValueError('b must be 2-D matrix or 1-D vector')
-    N, K = b.shape
+    h_c = _asarray(h_c)
+    h_r = _asarray(h_r)
+    if ((is_vector_input and (h_c.ndim != 1 or h_r.ndim != 1)) or
+        (not is_vector_input and (h_c.ndim != 2 or h_r.ndim != 2))):
+        raise ValueError('Dimension mismatch h vs b')
 
     # Step 1:
     if 1:
@@ -165,5 +170,7 @@ def solve_toeplitz_plus_hankel(t, h, b):
     if 1:
         # Extract solution vector.
         a = p[:, :, 0]
+        if is_vector_input:
+            a = np.squeeze(a, axis=-1)
 
-    return _safe_squeeze(a)
+    return a
