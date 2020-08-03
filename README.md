@@ -2,6 +2,14 @@ horoscopy
 =========
 A python package for speech signal processing.
 
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://takenori-y.github.io/horoscopy/v.0.1.0/index.html)
+[![PyPI](https://img.shields.io/pypi/v/horoscopy.svg)](https://pypi.python.org/pypi/horoscopy)
+[![License](https://img.shields.io/pypi/l/horoscopy.svg)](https://github.com/takenori-y/horoscopy/blob/master/LICENSE.md)
+
+Documentation
+-------------
+See [this page](https://takenori-y.github.io/horoscopy/v.0.1.0/index.html) for a reference manual.
+
 Installation
 ------------
 The latest stable release can be installed through PyPI by running
@@ -16,7 +24,6 @@ pip install -e horoscopy
 
 Examples
 --------
-
 ### Mel-cepstral analysis
 ```python
 import horoscopy
@@ -29,3 +36,11 @@ S = np.abs(librosa.stft(y))
 # Estimate mel-cepstral coefficients.
 C = horoscopy.stft_to_mcep(S, M=24)
 ```
+
+Acknowledgements
+----------------
+This library is inspired by the following open source projects:
+
+- SPTK: https://github.com/sp-nitech/SPTK
+- librosa: https://github.com/librosa/librosa
+- SciPy: https://github.com/scipy/scipy
