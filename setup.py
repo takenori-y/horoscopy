@@ -28,6 +28,12 @@ setup(
         'scipy >= 1.5.0',
     ],
     extras_require={
-        'dev': ['pytest', 'flake8'],
+        'dev': [
+            'pytest',
+            'flake8',
+            'sphinx',
+            'sphinx_rtd_theme',
+            'numpydoc',
+        ],
     },
 )

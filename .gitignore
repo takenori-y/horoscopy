@@ -1,3 +1,9 @@
+# Python
 __pycache__/
-*.egg-info/
+
+# Distribution
 venv/
+*.egg-info/
+
+# Sphinx documentation
+docs/_build/
