@@ -46,6 +46,10 @@ def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
     -----
     This implementation is based on an unpublished paper.
 
+    See also
+    --------
+    mcep_to_stft : Convert mel-cepstral coefficients to spectrum.
+
     """
 
     # Perform coefficients frequency transform.
@@ -110,8 +114,7 @@ def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
     # Perform Newton-Raphson method.
     prev_epsilon = sys.float_info.max
     for n in range(n_iter):
-        c = freqt(mc, M=h_fft, alpha=-alpha, recursive=False)
-        log_D = rfft(c, n=n_fft, axis=0).real
+        log_D = mcep_to_stft(mc, n_fft=n_fft, alpha=alpha, log=True)
 
         r = irfft(np.exp(log_I - 2 * log_D), axis=0)[:h_fft + 1]
         r_t = tilde(r, 2 * L - 1, alpha)
@@ -135,3 +138,55 @@ def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
         mc = np.squeeze(mc, axis=-1)
 
     return mc
+
+
+def mcep_to_stft(C, n_fft=512, alpha=0.42, log=False):
+    """Calculate magnitude spectrogram from mel-cepstral coefficients.
+
+    Parameters
+    ----------
+    C : array-like [shape=(M + 1,) or (M + 1, T)]
+        Input mel-cepstral coefficients.
+
+    n_fft : int > 0 [scalar]
+        Number of FFT bins.
+
+    alpha : float in (-1, 1) [scalar]
+        Frequency warping factor of the input mel-cepstral coefficients.
+
+    log : bool [scalar]
+        If True, return log-magnitude spectrogram.
+
+    Returns
+    -------
+    S : np.ndarray [shape=(1 + n_fft / 2,) or (1 + n_fft / 2, T)]
+        Converted magnitude spectrogram.
+
+    See also
+    --------
+    stft_to_mcep : Convert spectrum to mel-cepstral coefficients.
+
+    """
+
+    C = _asarray(C)
+    if C.ndim == 1:
+        is_vector_input = True
+        C = np.expand_dims(C, axis=-1)
+    elif C.ndim == 2:
+        is_vector_input = False
+    else:
+        raise ValueError('Input C must be 2-D matrix or 1-D vector')
+
+    if n_fft <= 0:
+        raise ValueError('FFT size must be a positive integer')
+
+    check_alpha(alpha)
+
+    c = freqt(C, M=n_fft // 2, alpha=-alpha, recursive=True)
+    S = rfft(c, n=n_fft, axis=0).real
+    if not log:
+        S = np.exp(S)
+    if is_vector_input:
+        S = np.squeeze(S, axis=-1)
+
+    return S

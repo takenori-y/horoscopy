@@ -29,6 +29,9 @@ def _asarray(a):
 
     """
 
+    if type(a) is np.ndarray:
+        return a
+
     a = np.asarray(a)
     if a.dtype is np.dtype('O'):
         raise ValueError('object arrays are not supported')

@@ -30,12 +30,15 @@ Examples
 import horoscopy
 import librosa
 
-# Compute STFT from audio.
+# Compute STFT of audio.
 y, _ = librosa.load('hoge.wav', sr=None)
 S = np.abs(librosa.stft(y))
 
 # Estimate mel-cepstral coefficients.
 C = horoscopy.stft_to_mcep(S, M=24)
+
+# Get spectral envelope.
+S2 = horoscopy.mcep_to_stft(C, n_fft=(S.shape[0] - 1) * 2)
 ```
 
 Acknowledgements
