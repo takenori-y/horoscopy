@@ -33,7 +33,6 @@ release = __version__
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.githubpages',
     'sphinx.ext.viewcode',
     'numpydoc',
 ]
