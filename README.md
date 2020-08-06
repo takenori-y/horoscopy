@@ -34,6 +34,9 @@ import librosa
 # Compute STFT of audio.
 y, _ = librosa.load('hoge.wav', sr=None)
 S = np.abs(librosa.stft(y))
+
+# Estimate mel-cepstral coefficients.
+C = horoscopy.stft_to_mcep(S, M=24)
 ```
 
 Acknowledgements
