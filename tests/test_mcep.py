@@ -10,7 +10,7 @@ import numpy as np
 import horoscopy
 from horoscopy.utils import read_binary
 
-from .utils import get_data
+from utils import get_data
 
 
 def test_stft_to_mcep(wav_file=get_data('example.wav'),
