@@ -182,7 +182,7 @@ def mcep_to_stft(C, n_fft=512, alpha=0.42, log=False):
 
     check_alpha(alpha)
 
-    c = freqt(C, M=n_fft // 2, alpha=-alpha, recursive=True)
+    c = freqt(C, M=n_fft // 2, alpha=-alpha, recursive=False)
     S = rfft(c, n=n_fft, axis=0).real
     if not log:
         S = np.exp(S)

@@ -4,9 +4,58 @@
 # Copyright (c) 2020 Takenori Yoshimura
 # Licensed under the MIT license
 
+from numba import jit
 import numpy as np
 
 from .utils import _asarray
+
+
+@jit('f8[:, :](f8[:, :, :], f8[:, :])', nopython=True)
+def _mv2d(m, v):
+    """Perform 2-D matrix-vector multiplication, dot-product.
+    """
+    ret = np.empty(v.shape)
+    ret[:, 0] = m[:, 0, 0] * v[:, 0] + m[:, 0, 1] * v[:, 1]
+    ret[:, 1] = m[:, 1, 0] * v[:, 0] + m[:, 1, 1] * v[:, 1]
+    return ret
+
+
+@jit('f8[:, :, :](f8[:, :, :], f8[:, :, :])', nopython=True)
+def _mm2d(m, n):
+    """Perform 2-D matrix-matrix mulciplication.
+    """
+    ret = np.empty(m.shape)
+    ret[:, 0, 0] = m[:, 0, 0] * n[:, 0, 0] + m[:, 0, 1] * n[:, 1, 0]
+    ret[:, 0, 1] = m[:, 0, 0] * n[:, 0, 1] + m[:, 0, 1] * n[:, 1, 1]
+    ret[:, 1, 0] = m[:, 1, 0] * n[:, 0, 0] + m[:, 1, 1] * n[:, 1, 0]
+    ret[:, 1, 1] = m[:, 1, 0] * n[:, 0, 1] + m[:, 1, 1] * n[:, 1, 1]
+    return ret
+
+
+@jit('f8[:, :, :](f8[:, :, :])', nopython=True)
+def _inv2d(x):
+    """Perform 2-D matrix inversion.
+    """
+    y = np.empty(x.shape)
+    y[:, 0, 0] = x[:, 1, 1]
+    y[:, 0, 1] = -x[:, 0, 1]
+    y[:, 1, 0] = -x[:, 1, 0]
+    y[:, 1, 1] = x[:, 0, 0]
+    y *= np.reshape(np.reciprocal(
+        x[:, 0, 0] * x[:, 1, 1] - x[:, 0, 1] * x[:, 1, 0]), (-1, 1, 1))
+    return y
+
+
+@jit('f8[:, :, :](f8[:, :, :])', nopython=True)
+def _ct2d(x):
+    """Perform 2-D cross transpose.
+    """
+    y = np.empty(x.shape)
+    y[:, 0, 0] = x[:, 1, 1]
+    y[:, 0, 1] = x[:, 1, 0]
+    y[:, 1, 0] = x[:, 0, 1]
+    y[:, 1, 1] = x[:, 0, 0]
+    return y
 
 
 def solve_toeplitz_plus_hankel(t, h, b):
@@ -37,41 +86,6 @@ def solve_toeplitz_plus_hankel(t, h, b):
 
     """
 
-    # Perform 2-D matrix-vector multiplication, dot-product.
-    def mv2d(m, v):
-        ret = np.zeros(v.shape)
-        ret[:, 0] = m[:, 0, 0] * v[:, 0] + m[:, 0, 1] * v[:, 1]
-        ret[:, 1] = m[:, 1, 0] * v[:, 0] + m[:, 1, 1] * v[:, 1]
-        return ret
-
-    # Perform 2-D matrix-matrix mulciplication.
-    def mm2d(m, n):
-        ret = np.zeros(m.shape)
-        ret[:, 0, 0] = m[:, 0, 0] * n[:, 0, 0] + m[:, 0, 1] * n[:, 1, 0]
-        ret[:, 0, 1] = m[:, 0, 0] * n[:, 0, 1] + m[:, 0, 1] * n[:, 1, 1]
-        ret[:, 1, 0] = m[:, 1, 0] * n[:, 0, 0] + m[:, 1, 1] * n[:, 1, 0]
-        ret[:, 1, 1] = m[:, 1, 0] * n[:, 0, 1] + m[:, 1, 1] * n[:, 1, 1]
-        return ret
-
-    # Perform 2-D matrix inversion.
-    def inv2d(x):
-        y = np.zeros(x.shape)
-        y[:, 0, 0] = x[:, 1, 1]
-        y[:, 0, 1] = -x[:, 0, 1]
-        y[:, 1, 0] = -x[:, 1, 0]
-        y[:, 1, 1] = x[:, 0, 0]
-        y *= np.reshape(np.reciprocal(
-            x[:, 0, 0] * x[:, 1, 1] - x[:, 0, 1] * x[:, 1, 0]), (-1, 1, 1))
-        return y
-
-    # Perform 2-D cross transpose.
-    def ct2d(x):
-        y = np.zeros(x.shape)
-        y[:, 0, 0] = x[:, 1, 1]
-        y[:, 0, 1] = x[:, 1, 0]
-        y[:, 1, 0] = x[:, 0, 1]
-        y[:, 1, 1] = x[:, 0, 0]
-        return y
 
     b = _asarray(b)
     if b.ndim == 1:
@@ -104,7 +118,7 @@ def solve_toeplitz_plus_hankel(t, h, b):
     # Step 1:
     if 1:
         # Set R.
-        R = np.zeros((N, K, 2, 2))
+        R = np.empty((N, K, 2, 2))
         R[:, :, 0, 0] = t_c
         R[:, :, 1, 1] = t_r
         R[:, :, 0, 1] = h_c
@@ -119,17 +133,19 @@ def solve_toeplitz_plus_hankel(t, h, b):
         R[s::2, :, 1, 0] -= d0
 
         # Set X_0.
-        X = np.zeros((N, K, 2, 2))
+        X = np.empty((N, K, 2, 2))
         X[0, :, 0, 0] = 1
         X[0, :, 1, 1] = 1
-        prev_X = np.zeros((N, K, 2, 2))
+        X[0, :, 0, 1] = 0
+        X[0, :, 1, 0] = 0
+        prev_X = np.empty((N, K, 2, 2))
 
         # Set p_0.
-        b_bar = np.zeros((K, 2))
+        b_bar = np.empty((K, 2))
         b_bar[:, 0] = b[0]
         b_bar[:, 1] = b[N - 1]
-        p = np.zeros((N, K, 2))
-        p[0] = mv2d(inv2d(R[0]), b_bar)
+        p = np.empty((N, K, 2))
+        p[0] = _mv2d(_inv2d(R[0]), b_bar)
 
         # Set V_x.
         V_x = np.copy(R[0])
@@ -139,31 +155,31 @@ def solve_toeplitz_plus_hankel(t, h, b):
         # a: Calculate E_x.
         E_x = np.zeros((K, 2, 2))
         for j in range(i):
-            E_x += mm2d(R[i - j], X[j])
+            E_x += _mm2d(R[i - j], X[j])
 
         # b: Calculate e_p.
         e_p = np.zeros((K, 2))
         for j in range(i):
-            e_p += mv2d(R[i - j], p[j])
+            e_p += _mv2d(R[i - j], p[j])
 
         # c: Calculate B_x.
-        B_x = mm2d(inv2d(ct2d(V_x)), E_x)
+        B_x = _mm2d(_inv2d(_ct2d(V_x)), E_x)
 
         # d: Update X and V_x.
         for j in range(1, i):
-            X[j] -= mm2d(ct2d(prev_X[i - j]), B_x)
+            X[j] -= _mm2d(_ct2d(prev_X[i - j]), B_x)
         X[i] = -B_x
         prev_X[1:i + 1] = X[1:i + 1]
-        V_x -= mm2d(ct2d(E_x), B_x)
+        V_x -= _mm2d(_ct2d(E_x), B_x)
 
         # e: Calculate g.
         b_bar[:, 0] = b[i]
         b_bar[:, 1] = b[N - 1 - i]
-        g = mv2d(inv2d(ct2d(V_x)), b_bar - e_p)
+        g = _mv2d(_inv2d(_ct2d(V_x)), b_bar - e_p)
 
         # f: Update p.
         for j in range(i):
-            p[j] += mv2d(ct2d(X[i - j]), g)
+            p[j] += _mv2d(_ct2d(X[i - j]), g)
         p[i] = g
 
     # Step 3:
