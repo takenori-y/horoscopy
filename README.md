@@ -2,8 +2,8 @@ horoscopy
 =========
 A python package for speech signal processing.
 
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://takenori-y.github.io/horoscopy/v.0.1.0/index.html)
-[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://takenori-y.github.io/horoscopy/latest/index.html)
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://takenori-y.github.io/horoscopy/v.0.1.0/)
+[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://takenori-y.github.io/horoscopy/latest/)
 [![PyPI](https://img.shields.io/pypi/v/horoscopy.svg)](https://pypi.python.org/pypi/horoscopy)
 [![License](https://img.shields.io/pypi/l/horoscopy.svg)](https://github.com/takenori-y/horoscopy/blob/master/LICENSE.md)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3971002.svg)](https://doi.org/10.5281/zenodo.3971002)
