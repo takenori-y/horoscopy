@@ -84,6 +84,65 @@ def check_alpha(alpha):
         raise ValueError('|alpha| must be less than 1.0')
 
 
+def sr_to_alpha(sr, N=10, step=0.01):
+    """Compute frequency warping factor under given sampling rate.
+
+    Parameters
+    ----------
+    sr : float > 0 [scalar]
+        Sampling rate in Hz.
+
+    N : int >= 2 [scalar]
+        Number of sample points in the frequency domain.
+
+    step : float > 0 [scalar]
+        Step size used in grid search.
+
+    Returns
+    -------
+    alpha: float [scalar]
+        Frequency warping factor.
+
+    """
+
+    def make_warped_freq(alpha, N):
+        """Compute phase characteristic of the 1st order all-pass filter.
+        """
+        omega = np.arange(N) * (np.pi / (N - 1))
+        alpha2 = alpha * alpha
+        numer = (1 - alpha2) * np.sin(omega)
+        denom = (1 + alpha2) * np.cos(omega) - 2 * alpha
+        warped_omega = np.arctan(numer / denom)
+        warped_omega[warped_omega < 0] += np.pi  # Phase unwrapping.
+        return warped_omega
+
+    def make_mel_freq(sr, N):
+        """Compute mel-frequencies based on G. Fant and normalize them.
+        """
+        freq = np.arange(N) * (0.5 * sr / (N - 1))
+        mel_freq = np.log(1 + freq / 1000)
+        mel_freq = mel_freq * (np.pi / mel_freq[-1])
+        return mel_freq
+
+    if sr <= 0:
+        raise ValueError('Sample rate must be a positive number')
+
+    if N <= 1:
+        raise ValueError('Number of sample points must be greater than 1')
+
+    if step <= 0:
+        raise ValueError('Step size must be a positive number')
+
+    # Search appropriate alpha in terms of L2 distance.
+    grid_alpha = np.arange(0, 1, step)
+    target = make_mel_freq(sr, N)
+    dist = [np.sum(np.square(target - make_warped_freq(a, N)))
+            for a in grid_alpha]
+    alpha = grid_alpha[np.argmin(dist)]
+
+    return alpha
+
+
 def read_binary(filename, dtype='double'):
     """Read a binary file.
 

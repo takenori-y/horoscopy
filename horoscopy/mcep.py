@@ -11,10 +11,10 @@ from scipy.fft import rfft, irfft
 
 from .freqt import freqt
 from .math import solve_toeplitz_plus_hankel
-from .utils import _asarray, check_alpha
+from .utils import _asarray, check_alpha, sr_to_alpha
 
 
-def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
+def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0, sr=None):
     """Calculate mel-cepstral coefficients from a magnitude spectrogram.
 
     Parameters
@@ -37,6 +37,10 @@ def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
     eps : float >= 0 [scalar]
         A very small value added to periodogram to avoid NaN caused by log().
 
+    sr : float > 0 [scalar]
+        Sampling rate in Hz. If not None, given alpha is overwritten with
+        appropriate one computed by a simple algorithm.
+
     Returns
     -------
     mc : np.ndarray [shape=(M + 1, T)]
@@ -49,6 +53,7 @@ def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
     See also
     --------
     mcep_to_stft : Convert mel-cepstral coefficients to spectrum.
+    horoscopy.utils.sr_to_alpha : Find appropriate alpha.
 
     """
 
@@ -93,6 +98,9 @@ def stft_to_mcep(S, M=24, alpha=0.42, n_iter=10, tol=1e-4, eps=0):
 
     if eps < 0:
         raise ValueError('Value eps must be a non-negative number')
+
+    if sr is not None:
+        alpha = sr_to_alpha(sr)
 
     check_alpha(alpha)
 
